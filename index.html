@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Camera Stream</title>
+</head>
+
+<body>
+    <img id="videoFeed" style="width:1280px;height:720px;">
+    <button onclick="requestSnapshot()">Capture Snapshot</button>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8000/human_couter/1');
+
+        ws.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'video_frame') {
+                document.getElementById('videoFeed').src = 'data:image/jpeg;base64,' + data.frame;
+            } else if (data.type === 'snapshot_response') {
+                alert(`Snapshot saved as ${data.filename}\nPeople detected: ${data.num_people}`);
+            }
+        };
+
+        function requestSnapshot() {
+            ws.send(JSON.stringify({ "type": "snapshot_request" }));
+        }
+    </script>
+</body>
+
+</html>
