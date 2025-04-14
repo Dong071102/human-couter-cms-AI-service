@@ -25,12 +25,12 @@ cameras_details = {
     for row in cameras_info
 } if cameras_info else {}
 
-def create_evidence_image_url(schedule_id, camera_id):
+def create_evidence_image_url(schedule_id, camera_id,timestamp):
     today = datetime.now()
     date_folder = today.strftime("%Y/%m/%d")
     full_folder_path = os.path.join(BASE_VIDEO_DIR, date_folder)
     os.makedirs(full_folder_path, exist_ok=True)
-    video_filename = f"{schedule_id}__{camera_id}.jpg"
+    video_filename = f"{schedule_id}__{camera_id}__{timestamp}.jpg"
     return os.path.join(full_folder_path, video_filename)
 
 async def handle_client(websocket, path):
@@ -47,7 +47,7 @@ async def handle_client(websocket, path):
     classroom_id = camera_info["classroom_id"]
     print("📹 Đang stream từ:", camera_URL)
 
-    cap = cv2.VideoCapture('tv3_sau.mp4')  # hoặc camera_URL nếu live
+    cap = cv2.VideoCapture('src/tv3_sau.mp4')  # hoặc camera_URL nếu live
     if not cap.isOpened():
         await websocket.send(json.dumps({
             "type": "error",
@@ -66,7 +66,9 @@ async def handle_client(websocket, path):
             if not ret:
                 break
 
-            frame = cv2.resize(frame, (640, 360))  # giảm kích thước cho nhẹ
+                # frame = cv2.resize(frame, (640, 320))  # tăng độ phân giải cho mượt mà
+            frame = cv2.resize(frame, (1280, 720))  # tăng độ phân giải cho mượt mà
+
             results = model.track(frame, persist=True, classes=0)
 
             num_people = 0
@@ -101,7 +103,7 @@ async def handle_client(websocket, path):
             # Lưu snapshot nếu có yêu cầu
             if snapshot_requested:
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                snapshot_path = create_evidence_image_url(schedule_id, camera_id)
+                snapshot_path = create_evidence_image_url(schedule_id, camera_id,timestamp)
                 cv2.imwrite(snapshot_path, frame)
 
                 insert_snapshot_person(
@@ -112,7 +114,7 @@ async def handle_client(websocket, path):
                     image_path=snapshot_path
                 )
 
-                _, buffer = cv2.imencode('.jpg', frame)
+                _, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 95])  # Tăng chất lượng nén
                 img_base64 = base64.b64encode(buffer).decode('utf-8')
 
                 await websocket.send(json.dumps({
@@ -127,14 +129,14 @@ async def handle_client(websocket, path):
                 schedule_id = None
 
             # Gửi video frame về client
-            _, buffer = cv2.imencode('.jpg', frame)
+            _, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 95])  # Tăng chất lượng nén
             jpg_as_text = base64.b64encode(buffer).decode('utf-8')
             await websocket.send(json.dumps({
                 "type": "video_frame",
                 "frame": jpg_as_text
             }))
 
-            await asyncio.sleep(1/25)
+            await asyncio.sleep(1/30)  # Tăng FPS lên 30
 
     except websockets.ConnectionClosed:
         print("🔌 Kết nối WebSocket đã đóng")
