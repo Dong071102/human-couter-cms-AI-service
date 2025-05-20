@@ -1,54 +1,77 @@
-# Human Counter CMS
+# 👀 Human Counter CMS
 
-**Human Counter CMS** là một dịch vụ sử dụng mô hình YOLO và OpenCV để đếm số lượng người trong thời gian thực từ camera IP hoặc video file. Hệ thống được triển khai thông qua WebSocket server và có thể chụp ảnh bằng yêu cầu từ client.
+Human Counter CMS là một dịch vụ nhẹ sử dụng AI, tận dụng mô hình phát hiện đối tượng YOLO và OpenCV để đếm số lượng người trong luồng video hoặc từ camera IP. Dịch vụ cung cấp API WebSocket để cập nhật dữ liệu theo thời gian thực và hỗ trợ lấy ảnh chụp từ phía client.
 
-# Writing README content to a markdown file for download
-readme_content = """# Human Counter CMS
+## 🛠️ Tính năng
 
-Human Counter CMS is a lightweight AI-powered service that leverages the YOLO object detection model and OpenCV to count people in video streams or IP camera feeds. The service exposes a WebSocket API for real-time updates and supports snapshot requests from clients.
+- Đếm người theo thời gian thực từ camera IP hoặc video
+- Phát hiện bằng AI sử dụng YOLO và OpenCV
+- Máy chủ WebSocket cung cấp dữ liệu đếm trực tiếp
+- Endpoint để chụp và trả về khung hình hiện tại
+- Chạy được trên cả Linux và Windows
 
-## 🛠️ Features
-
-- Real-time human counting from IP cameras or video files
-- AI-driven detection using YOLO and OpenCV
-- WebSocket server for live count updates
-- Snapshot endpoint to capture and retrieve current frames
-- Cross-platform: runs on both Linux and Windows
-
-## 📐 Architecture
+## 📐 Kiến trúc hệ thống
 
 ```text
-┌────────────────┐   frames   ┌───────────────┐   counts/snapshots   ┌──────────────────┐
-│ IP Camera or   │ ─────────▶│ Detection     │ ───────────────────▶│ WebSocket Server  │
-│ Video File     │           │ Service (YOLO│                     │ (FastAPI + WS)    │
-│                │           │ + OpenCV)     │                     └──────────────────┘
-└────────────────┘           └───────────────┘
----
+┌────────────────┐   khung hình   ┌───────────────┐   đếm/ảnh chụp    ┌──────────────────┐
+│ Camera IP hoặc │ ─────────────▶│ Dịch vụ phát  │ ─────────────────▶│ Máy chủ WebSocket │
+│ File video     │               │ hiện (YOLO +  │                   │ (FastAPI + WS)    │
+│                │               │ OpenCV)       │                   └──────────────────┘
+└────────────────┘               └───────────────┘
+```
 
-## 📦 Yêu cầu hệ thống
+## 📋 Yêu cầu hệ thống
 
-- Python 3.11
-- pip ≥ 21
-- CUDA 12 (nếu dùng GPU)
-- Hệ điều hành: Linux / Windows
-
----
+- Python 3.11+
+- pip 21+  
+- CUDA 12+ (tùy chọn, cần nếu muốn tăng tốc bằng GPU)
+- Hệ điều hành: Linux hoặc Windows
 
 ## 🚀 Cài đặt
 
-1. **Clone project:**
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/Dong071102/human-couter-cms-AI-service.git
+   cd human-couter-cms-AI-service
+   ```
 
-```bash
-git clone https://github.com/yourusername/human-couter-services.git
-cd human-couter-services
-```
-2. **Install packages and dependency**
+2. **Cài đặt thư viện phụ thuộc**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```bash
-pip install .
-```
-3. **Run project**
+3. **Chạy dịch vụ**
+   ```bash
+   python main.py
+   ```
 
-```bash
-python main.py
-```
+## ⚙️ Cấu hình
+
+- **Nguồn camera**: chỉnh sửa `main.py` hoặc sử dụng biến môi trường để trỏ tới URL của camera IP hoặc đường dẫn video.
+- **Thiết lập mô hình**: chỉnh sửa `src/detector.py` để thay đổi trọng số YOLO hoặc điều chỉnh ngưỡng phát hiện.
+- **Cổng WebSocket**: mặc định là `8000`, có thể thay đổi trong `main.py`.
+
+## 📡 Cách sử dụng
+
+1. **Kết nối tới WebSocket**
+   ```js
+   const socket = new WebSocket('ws://localhost:8000/ws/count');
+   socket.onmessage = (event) => {
+     const data = JSON.parse(event.data);
+     console.log('Số người hiện tại:', data.count);
+   };
+   ```
+
+2. **Yêu cầu lấy ảnh chụp**
+   ```http
+   GET http://localhost:8000/snapshot
+   ```
+   - Trả về khung hình mới nhất dưới dạng ảnh JPEG.
+
+## 🤝 Đóng góp
+
+Chào mừng mọi đóng góp! Hãy mở issue hoặc pull request nếu bạn có ý tưởng cải tiến, sửa lỗi hoặc thêm tính năng mới.
+
+## 📄 Giấy phép
+
+Dự án này được phát hành theo giấy phép MIT. Xem chi tiết trong tập tin [LICENSE](LICENSE).
