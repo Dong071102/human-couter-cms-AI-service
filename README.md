@@ -68,10 +68,4 @@ Human Counter CMS là một dịch vụ nhẹ sử dụng AI, tận dụng mô h
    ```
    - Trả về khung hình mới nhất dưới dạng ảnh JPEG.
 
-## 🤝 Đóng góp
 
-Chào mừng mọi đóng góp! Hãy mở issue hoặc pull request nếu bạn có ý tưởng cải tiến, sửa lỗi hoặc thêm tính năng mới.
-
-## 📄 Giấy phép
-
-Dự án này được phát hành theo giấy phép MIT. Xem chi tiết trong tập tin [LICENSE](LICENSE).
